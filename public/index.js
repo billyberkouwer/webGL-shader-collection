@@ -9,23 +9,81 @@ if (!gl) {
 const windowWidth = window.innerWidth;
 const windowHeight = window.innerHeight;
 
-let vertexData = [
-    -1, 1, 0,
-    1, 1, 0,
-    1, -1, 0,
-    -1, 1, 0,
-    1, -1, 0,
-    -1, -1, 0,
+const vertexData = [
+    // Front
+    0.5, 0.5, 0.5,
+    0.5, -.5, 0.5,
+    -.5, 0.5, 0.5,
+    -.5, 0.5, 0.5,
+    0.5, -.5, 0.5,
+    -.5, -.5, 0.5,
+
+    // Left
+    -.5, 0.5, 0.5,
+    -.5, -.5, 0.5,
+    -.5, 0.5, -.5,
+    -.5, 0.5, -.5,
+    -.5, -.5, 0.5,
+    -.5, -.5, -.5,
+
+    // Back
+    -.5, 0.5, -.5,
+    -.5, -.5, -.5,
+    0.5, 0.5, -.5,
+    0.5, 0.5, -.5,
+    -.5, -.5, -.5,
+    0.5, -.5, -.5,
+
+    // Right
+    0.5, 0.5, -.5,
+    0.5, -.5, -.5,
+    0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5,
+    0.5, -.5, 0.5,
+    0.5, -.5, -.5,
+
+    // Top
+    0.5, 0.5, 0.5,
+    0.5, 0.5, -.5,
+    -.5, 0.5, 0.5,
+    -.5, 0.5, 0.5,
+    0.5, 0.5, -.5,
+    -.5, 0.5, -.5,
+
+    // Bottom
+    0.5, -.5, 0.5,
+    0.5, -.5, -.5,
+    -.5, -.5, 0.5,
+    -.5, -.5, 0.5,
+    0.5, -.5, -.5,
+    -.5, -.5, -.5,
 ];
 
-let colorData = [
-    0.1, 0.5, 0.9,
-    1, 0, 0,
-    0, 0.3, 1,
-    0, 1, 1,
-    1, 0, 0,
-    0, 0, 1,
-];
+// const colorData = [
+//     0.1, 0.5, 0.9,
+//     1, 0, 0,
+//     0, 0.3, 1,
+// ];
+
+
+function randomColor() {
+    return [Math.random(), Math.random(), Math.random()];
+}
+
+// const colorData = [
+//     ...randomColor(),
+//     ...randomColor(),
+//     ...randomColor(),
+// ]
+
+let colorData = [];
+
+for (let face = 0; face < 6; face++) {
+    let faceColor = randomColor();
+    for (let vertex = 0; vertex < 6; vertex++) {
+        colorData.push(...faceColor);
+    }
+}
 
 const positionBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -35,13 +93,9 @@ const colorBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.STATIC_DRAW);
 
-const matrix = mat4.create();
-mat4.rotateZ(matrix, matrix, Math.PI/2);
-mat4.scale(matrix, matrix, [0.5, 0.5, 0.5]);
-
-console.log(matrix); 
-
 const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+
+
 
 gl.shaderSource(vertexShader, `
 precision highp float;
@@ -88,17 +142,35 @@ gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
 gl.vertexAttribPointer(colorLocation, 3, gl.FLOAT, false, 0, 0);
 
 gl.useProgram(program);
+gl.enable(gl.DEPTH_TEST)
 
 // always do this after linking and using program
 const uniformLocations = {
     matrix: gl.getUniformLocation(program, `matrix`),
 };
 
+const matrix = mat4.create();
+const projectionMatrix = mat4.create();
+mat4.perspective(projectionMatrix,
+    50 * Math.PI/180,    // vertical field of view (angle in rad)
+    canvas.width/canvas.height,    // aspect ratio
+    1e-4,     // near cull distance
+    1e4,     // far cull distance
+);
+
+const finalMatrix = mat4.create();
+mat4.translate(matrix, matrix, [0, 0, -4]);
+
 function animate() {
     requestAnimationFrame(animate);
-    mat4.rotateZ(matrix, matrix, Math.PI/2 / 100);
-    gl.uniformMatrix4fv(uniformLocations.matrix, false, matrix);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    mat4.rotateX(matrix, matrix, Math.PI/2 / 110);
+    mat4.rotateY(matrix, matrix, Math.PI/2 / 110);
+
+    //  Projection Matrix (p), Model Matrix (m)
+    // p * m
+    mat4.multiply(finalMatrix, projectionMatrix, matrix);
+    gl.uniformMatrix4fv(uniformLocations.matrix, false, finalMatrix);
+    gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
 }
 
-animate()
+animate();
