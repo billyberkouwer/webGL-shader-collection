@@ -9,6 +9,7 @@ if (!gl) {
 const windowWidth = window.innerWidth;
 const windowHeight = window.innerHeight;
 
+// vertex data
 const vertexData = [
     // Front
     0.5, 0.5, 0.5,
@@ -59,29 +60,20 @@ const vertexData = [
     -.5, -.5, -.5,
 ];
 
-// const colorData = [
-//     0.1, 0.5, 0.9,
-//     1, 0, 0,
-//     0, 0.3, 1,
-// ];
-
-
 function randomColor() {
-    return [Math.random(), Math.random(), Math.random()];
+    return [
+        Math.random(), 
+        Math.random(), 
+        Math.random(),
+    ];
 }
 
-// const colorData = [
-//     ...randomColor(),
-//     ...randomColor(),
-//     ...randomColor(),
-// ]
-
+// generate random colors and assign the same color to each vertex on a face
 let colorData = [];
-
 for (let face = 0; face < 6; face++) {
     let faceColor = randomColor();
     for (let vertex = 0; vertex < 6; vertex++) {
-        colorData.push(...faceColor);
+        colorData.push(...faceColor); // destructure the result of random color (to extract contents from array)
     }
 }
 
@@ -94,8 +86,6 @@ gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.STATIC_DRAW);
 
 const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-
-
 
 gl.shaderSource(vertexShader, `
 precision highp float;
