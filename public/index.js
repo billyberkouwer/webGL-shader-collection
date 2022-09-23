@@ -10,71 +10,82 @@ const windowWidth = window.innerWidth;
 const windowHeight = window.innerHeight;
 
 // vertex data
-const vertexData = [
-    // Front
-    0.5, 0.5, 0.5,
-    0.5, -.5, 0.5,
-    -.5, 0.5, 0.5,
-    -.5, 0.5, 0.5,
-    0.5, -.5, 0.5,
-    -.5, -.5, 0.5,
+// const vertexData = [
+//     // Front
+//     0.5, 0.5, 0.5,
+//     0.5, -.5, 0.5,
+//     -.5, 0.5, 0.5,
+//     -.5, 0.5, 0.5,
+//     0.5, -.5, 0.5,
+//     -.5, -.5, 0.5,
 
-    // Left
-    -.5, 0.5, 0.5,
-    -.5, -.5, 0.5,
-    -.5, 0.5, -.5,
-    -.5, 0.5, -.5,
-    -.5, -.5, 0.5,
-    -.5, -.5, -.5,
+//     // Left
+//     -.5, 0.5, 0.5,
+//     -.5, -.5, 0.5,
+//     -.5, 0.5, -.5,
+//     -.5, 0.5, -.5,
+//     -.5, -.5, 0.5,
+//     -.5, -.5, -.5,
 
-    // Back
-    -.5, 0.5, -.5,
-    -.5, -.5, -.5,
-    0.5, 0.5, -.5,
-    0.5, 0.5, -.5,
-    -.5, -.5, -.5,
-    0.5, -.5, -.5,
+//     // Back
+//     -.5, 0.5, -.5,
+//     -.5, -.5, -.5,
+//     0.5, 0.5, -.5,
+//     0.5, 0.5, -.5,
+//     -.5, -.5, -.5,
+//     0.5, -.5, -.5,
 
-    // Right
-    0.5, 0.5, -.5,
-    0.5, -.5, -.5,
-    0.5, 0.5, 0.5,
-    0.5, 0.5, 0.5,
-    0.5, -.5, 0.5,
-    0.5, -.5, -.5,
+//     // Right
+//     0.5, 0.5, -.5,
+//     0.5, -.5, -.5,
+//     0.5, 0.5, 0.5,
+//     0.5, 0.5, 0.5,
+//     0.5, -.5, 0.5,
+//     0.5, -.5, -.5,
 
-    // Top
-    0.5, 0.5, 0.5,
-    0.5, 0.5, -.5,
-    -.5, 0.5, 0.5,
-    -.5, 0.5, 0.5,
-    0.5, 0.5, -.5,
-    -.5, 0.5, -.5,
+//     // Top
+//     0.5, 0.5, 0.5,
+//     0.5, 0.5, -.5,
+//     -.5, 0.5, 0.5,
+//     -.5, 0.5, 0.5,
+//     0.5, 0.5, -.5,
+//     -.5, 0.5, -.5,
 
-    // Bottom
-    0.5, -.5, 0.5,
-    0.5, -.5, -.5,
-    -.5, -.5, 0.5,
-    -.5, -.5, 0.5,
-    0.5, -.5, -.5,
-    -.5, -.5, -.5,
-];
+//     // Bottom
+//     0.5, -.5, 0.5,
+//     0.5, -.5, -.5,
+//     -.5, -.5, 0.5,
+//     -.5, -.5, 0.5,
+//     0.5, -.5, -.5,
+//     -.5, -.5, -.5,
+// ];
+
+let vertexData;
+
+function generatePointVertex(numberOfPoints) {
+    let points = []
+    for (let point = 0; point < numberOfPoints; point++) {
+        const r = () => Math.random() - 0.5;
+        const xyz = [r(), r(), r()]
+        points.push(...xyz);
+    }
+    return points;
+}
+
+vertexData = generatePointVertex(50000);
 
 function randomColor() {
     return [
-        Math.random(), 
-        Math.random(), 
-        Math.random(),
+        Math.random() -0.6, 
+        Math.random() -0.1, 
+        Math.random() - Math.random()/4,
     ];
 }
 
 // generate random colors and assign the same color to each vertex on a face
 let colorData = [];
-for (let face = 0; face < 6; face++) {
-    let faceColor = randomColor();
-    for (let vertex = 0; vertex < 6; vertex++) {
-        colorData.push(...faceColor); // destructure the result of random color (to extract contents from array)
-    }
+for (let i = 0; i < vertexData.length; i++) {
+    colorData.push(...randomColor())
 }
 
 const positionBuffer = gl.createBuffer();
@@ -151,23 +162,23 @@ mat4.perspective(projectionMatrix,
 
 const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
-mat4.translate(modelMatrix, modelMatrix, [-1.5, 0, -3]);
+mat4.translate(modelMatrix, modelMatrix, [0, 0, -3]);
 
-mat4.translate(viewMatrix, viewMatrix, [-1.5, 0, 5]);
+mat4.translate(viewMatrix, viewMatrix, [0, 0, 0]);
 mat4.invert(viewMatrix, viewMatrix);
 
 function animate() {
     requestAnimationFrame(animate);
     // ROTATE
-    // mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / 110);
-    // mat4.rotateY(modelMatrix, modelMatrix, Math.PI/2 / 110);
+    mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / 110);
+    mat4.rotateY(modelMatrix, modelMatrix, Math.PI/2 / 110);
 
     //  Projection Matrix (p), Model Matrix (m)
     // p * m
     mat4.multiply(mvMatrix, viewMatrix, modelMatrix);
     mat4.multiply(mvpMatrix, projectionMatrix, mvMatrix);
     gl.uniformMatrix4fv(uniformLocations.matrix, false, mvpMatrix);
-    gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
+    gl.drawArrays(gl.POINTS, 0, vertexData.length / 3);
 }
 
 animate();
