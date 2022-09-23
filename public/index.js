@@ -1,6 +1,6 @@
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl');
-const { mat4, mat3, mat2 } = glMatrix;
+const { mat4, mat3, mat2, vec3 } = glMatrix;
 
 if (!gl) {
     throw new Error('WebGL is not supported in your web browser');
@@ -8,6 +8,11 @@ if (!gl) {
 
 const windowWidth = window.innerWidth;
 const windowHeight = window.innerHeight;
+const mouseLocation = {x: 1, y: 1};
+window.addEventListener('mousemove', (event) => {
+    mouseLocation.x = event.clientX;
+    mouseLocation.y = event.clientY;
+});
 
 // vertex data
 // const vertexData = [
@@ -66,13 +71,15 @@ function generatePointVertex(numberOfPoints) {
     let points = []
     for (let point = 0; point < numberOfPoints; point++) {
         const r = () => Math.random() - 0.5;
-        const xyz = [r(), r(), r()]
+        const xyz = [r(), r(), r()];
         points.push(...xyz);
+        // const outputPoint = vec3.normalize(vec3.create(), xyz);
+        // points.push(...outputPoint);
     }
     return points;
 }
 
-vertexData = generatePointVertex(50000);
+vertexData = generatePointVertex(0.25e6);
 
 function randomColor() {
     return [
@@ -110,6 +117,7 @@ uniform mat4 matrix;
 void main() {
     vColor = color;
     gl_Position = matrix * vec4(position, 1);
+    gl_PointSize = 0.75;
 }
 `);
 
@@ -170,8 +178,8 @@ mat4.invert(viewMatrix, viewMatrix);
 function animate() {
     requestAnimationFrame(animate);
     // ROTATE
-    mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / 110);
-    mat4.rotateY(modelMatrix, modelMatrix, Math.PI/2 / 110);
+    mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.x - mouseLocation.x / 2) + 100));
+    mat4.rotateY(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.y - mouseLocation.y / 2) + 100));
 
     //  Projection Matrix (p), Model Matrix (m)
     // p * m
