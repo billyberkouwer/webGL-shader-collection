@@ -79,7 +79,7 @@ function generatePointVertex(numberOfPoints) {
     return points;
 }
 
-vertexData = generatePointVertex(0.25e6);
+vertexData = generatePointVertex(250000);
 
 function randomColor() {
     return [
