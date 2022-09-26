@@ -8,7 +8,7 @@ if (!gl) {
 
 const windowWidth = window.innerWidth;
 const windowHeight = window.innerHeight;
-const mouseLocation = {x: 1, y: 1};
+const mouseLocation = {x: 100, y: 100};
 window.addEventListener('mousemove', (event) => {
     mouseLocation.x = event.clientX;
     mouseLocation.y = event.clientY;
@@ -72,20 +72,31 @@ function generatePointVertex(numberOfPoints) {
     for (let point = 0; point < numberOfPoints; point++) {
         const r = () => Math.random() - 0.5;
         const xyz = [r(), r(), r()];
-        points.push(...xyz);
-        // const outputPoint = vec3.normalize(vec3.create(), xyz);
-        // points.push(...outputPoint);
+        const outputPoint = vec3.normalize(vec3.create(), xyz);
+        points.push(...outputPoint);
     }
     return points;
 }
 
-vertexData = generatePointVertex(250000);
+function displacePoints() {
+    let points = [];
+    let direction = Math.round(Math.random())
+    if (direction) {
+        points = vertexData.map(el => (el+=Math.random()*0.005));
+        return points;
+    }   else {
+        points = vertexData.map(el => (el-=Math.random()*0.005));
+        return points;
+    }
+}
+
+vertexData = generatePointVertex(25000);
 
 function randomColor() {
     return [
-        Math.random() -0.6, 
-        Math.random() -0.1, 
-        Math.random() - Math.random()/4,
+        Math.random()/4, 
+        Math.random()/4, 
+        Math.random()/4,
     ];
 }
 
@@ -97,7 +108,7 @@ for (let i = 0; i < vertexData.length; i++) {
 
 const positionBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.DYNAMIC_DRAW);
 
 const colorBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
@@ -175,11 +186,15 @@ mat4.translate(modelMatrix, modelMatrix, [0, 0, -3]);
 mat4.translate(viewMatrix, viewMatrix, [0, 0, 0]);
 mat4.invert(viewMatrix, viewMatrix);
 
+
 function animate() {
     requestAnimationFrame(animate);
+    vertexData = displacePoints();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.DYNAMIC_DRAW);
     // ROTATE
-    mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.x - mouseLocation.x / 2) + 100));
-    mat4.rotateY(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.y - mouseLocation.y / 2) + 100));
+    // mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.x - mouseLocation.x / 2) + 100));
+    // mat4.rotateY(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.y - mouseLocation.y / 2) + 100));
 
     //  Projection Matrix (p), Model Matrix (m)
     // p * m
