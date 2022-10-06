@@ -100,8 +100,8 @@ function generatePointVertex(numberOfPoints) {
         const outputPoint = (vec3.create(), cloud);
         points.push(...outputPoint);
     }
-    const displaced = points.map((el, i) => el+=noise3d(i/4.9,i/1.99,i/100))
-    cloud = displaced.map(el => el = el/4)
+    const displaced = points.map((el, i) => el/=noise3d(i/4.9,i/1.99,i/100))
+    cloud = displaced.map(el => el = el/400)
     console.log(cloud)
     console.log(points)
     return cloud;
