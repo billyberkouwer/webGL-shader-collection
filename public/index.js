@@ -102,14 +102,6 @@ function generatePointVertex(numberOfPoints) {
     return points;
 }
 
-
-
-function displacePoints() {
-    let points = [];
-    points = vertexData.map(el => (el += value3d));
-    return points;
-}
-
 vertexData = generatePointVertex(130000);
 
 function randomColor() {
