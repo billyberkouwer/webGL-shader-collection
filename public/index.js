@@ -1,6 +1,8 @@
+import { createNoise3D } from '/public/simplex-noise.js';
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl');
 const { mat4, mat3, mat2, vec3 } = glMatrix;
+
 
 if (!gl) {
     throw new Error('WebGL is not supported in your web browser');
@@ -10,8 +12,8 @@ const windowWidth = window.innerWidth;
 const windowHeight = window.innerHeight;
 const mouseLocation = {x: 100, y: 100};
 window.addEventListener('mousemove', (event) => {
-    mouseLocation.x = event.clientX;
-    mouseLocation.y = event.clientY;
+    mouseLocation.x = event.clientX-50;
+    mouseLocation.y = event.clientY-50;
 });
 
 // vertex data
@@ -67,36 +69,54 @@ window.addEventListener('mousemove', (event) => {
 
 let vertexData;
 
+const noise3d = createNoise3D();
+
 function generatePointVertex(numberOfPoints) {
-    let points = []
+    let points = [];
+    
+    let x = 2;
+    let y = 5;
+    let z = 50;
+    const xInc = 0.000001;
+    const yInc = 0.1;
+    const zInc = 0.1;
+    
     for (let point = 0; point < numberOfPoints; point++) {
-        const r = () => Math.floor((Math.random() - 0.5)) + 0.5;
-        const xyz = [r(), r(), r()];
-        const outputPoint = vec3.normalize(vec3.create(), xyz);
+        x+=xInc;
+        y+=yInc;
+        z+=zInc;
+        const value3d = noise3d(x, y, z) ;
+        x+=xInc;
+        y+=yInc;
+        z+=zInc;
+        const value3d2 = noise3d(x, y, z);
+        x+=xInc;
+        y+=yInc;
+        z+=zInc;
+        const value3d3 = noise3d(x, y, z);
+        // const r = () => Math.random()-0.5;
+        const xyz = [value3d, value3d2, value3d3];
+        const outputPoint = (vec3.create(), xyz);
         points.push(...outputPoint);
     }
     return points;
 }
 
+
+
 function displacePoints() {
     let points = [];
-    let direction = Math.round(Math.random())
-    if (direction) {
-        points = vertexData.map(el => (el+=Math.random()*0.02));
-        return points;
-    }   else {
-        points = vertexData.map(el => (el-=Math.random()*0.02));
-        return points;
-    }
+    points = vertexData.map(el => (el += value3d));
+    return points;
 }
 
-vertexData = generatePointVertex(25000);
+vertexData = generatePointVertex(200000);
 
 function randomColor() {
     return [
-        Math.random()/2, 
-        Math.random()/2, 
-        Math.random()/2,
+        0.1, 
+        Math.random(), 
+        Math.random(),
     ];
 }
 
@@ -189,12 +209,12 @@ mat4.invert(viewMatrix, viewMatrix);
 
 function animate() {
     requestAnimationFrame(animate);
-    vertexData = displacePoints();
+    // vertexData = displacePoints();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.DYNAMIC_DRAW);
     // ROTATE
-    // mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.x - mouseLocation.x / 2) + 100));
-    // mat4.rotateY(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.y - mouseLocation.y / 2) + 100));
+    mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.x - mouseLocation.x / 2) + 100));
+    mat4.rotateY(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.y - mouseLocation.y / 2) + 100));
 
     //  Projection Matrix (p), Model Matrix (m)
     // p * m
