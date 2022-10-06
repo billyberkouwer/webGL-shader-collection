@@ -77,9 +77,9 @@ function generatePointVertex(numberOfPoints) {
     let x = 2;
     let y = 5;
     let z = 50;
-    const xInc = 0.000001;
-    const yInc = 0.1;
-    const zInc = 0.1;
+    const xInc = 0.0000005;
+    const yInc = 0.000002;
+    const zInc = 0.5;
     
     for (let point = 0; point < numberOfPoints; point++) {
         x+=xInc;
@@ -96,7 +96,7 @@ function generatePointVertex(numberOfPoints) {
         const value3d3 = noise3d(x, y, z);
         // const r = () => Math.random()-0.5;
         const xyz = [value3d, value3d2, value3d3];
-        const outputPoint = (vec3.create(), xyz);
+        const outputPoint = vec3.normalize(vec3.create(), xyz);
         points.push(...outputPoint);
     }
     return points;
@@ -114,9 +114,7 @@ vertexData = generatePointVertex(200000);
 
 function randomColor() {
     return [
-        0.1, 
-        Math.random(), 
-        Math.random(),
+        0,0,0
     ];
 }
 
