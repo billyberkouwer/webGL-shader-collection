@@ -85,15 +85,15 @@ function generatePointVertex(numberOfPoints) {
         x+=xInc;
         y+=yInc;
         z+=zInc;
-        const value3d = noise3d(x, y, z) ;
+        const value3d = noise3d(x, y, z)/1.5 ;
         x+=xInc;
         y+=yInc;
         z+=zInc;
-        const value3d2 = noise3d(x, y, z);
+        const value3d2 = noise3d(x, y, z)/1.5;
         x+=xInc;
         y+=yInc;
         z+=zInc;
-        const value3d3 = noise3d(x, y, z);
+        const value3d3 = noise3d(x, y, z)/1.5;
         // const r = () => Math.random()-0.5;
         const xyz = [value3d, value3d2, value3d3];
         const outputPoint = (vec3.create(), xyz);
@@ -110,13 +110,11 @@ function displacePoints() {
     return points;
 }
 
-vertexData = generatePointVertex(200000);
+vertexData = generatePointVertex(130000);
 
 function randomColor() {
     return [
-        0.1, 
-        Math.random(), 
-        Math.random(),
+        0,0,0
     ];
 }
 
