@@ -73,13 +73,14 @@ const noise3d = createNoise3D();
 
 function generatePointVertex(numberOfPoints) {
     let points = [];
+    let cloud = []
     
     let x = 2;
     let y = 5;
     let z = 50;
     const xInc = 0.000001;
-    const yInc = 0.1;
-    const zInc = 0.5;
+    const yInc = 0.001;
+    const zInc = 0.9;
     
     for (let point = 0; point < numberOfPoints; point++) {
         x+=xInc;
@@ -95,11 +96,15 @@ function generatePointVertex(numberOfPoints) {
         z+=zInc;
         const value3d3 = noise3d(x, y, z);
         // const r = () => Math.random()-0.5;
-        const xyz = [value3d, value3d2*0.25, value3d3*value3d*value3d];
-        const outputPoint = (vec3.create(), xyz);
+        const cloud = [value3d, value3d2, value3d3];
+        const outputPoint = (vec3.create(), cloud);
         points.push(...outputPoint);
     }
-    return points;
+    const displaced = points.map((el, i) => el+=noise3d(i/4.9,i/1.99,i/100))
+    cloud = displaced.map(el => el = el/4)
+    console.log(cloud)
+    console.log(points)
+    return cloud;
 }
 
 
@@ -110,7 +115,7 @@ function displacePoints() {
     return points;
 }
 
-vertexData = generatePointVertex(75000);
+vertexData = generatePointVertex(750000);
 
 function randomColor() {
     return [
