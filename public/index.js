@@ -70,7 +70,7 @@ let vertexData;
 function generatePointVertex(numberOfPoints) {
     let points = []
     for (let point = 0; point < numberOfPoints; point++) {
-        const r = () => Math.random() - 0.5;
+        const r = () => Math.floor((Math.random() - 0.5)) + 0.5;
         const xyz = [r(), r(), r()];
         const outputPoint = vec3.normalize(vec3.create(), xyz);
         points.push(...outputPoint);
@@ -82,10 +82,10 @@ function displacePoints() {
     let points = [];
     let direction = Math.round(Math.random())
     if (direction) {
-        points = vertexData.map(el => (el+=Math.random()*0.005));
+        points = vertexData.map(el => (el+=Math.random()*0.02));
         return points;
     }   else {
-        points = vertexData.map(el => (el-=Math.random()*0.005));
+        points = vertexData.map(el => (el-=Math.random()*0.02));
         return points;
     }
 }
@@ -94,9 +94,9 @@ vertexData = generatePointVertex(25000);
 
 function randomColor() {
     return [
-        Math.random()/4, 
-        Math.random()/4, 
-        Math.random()/4,
+        Math.random()/2, 
+        Math.random()/2, 
+        Math.random()/2,
     ];
 }
 
