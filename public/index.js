@@ -1,7 +1,7 @@
-import { createNoise3D } from '/public/simplex-noise.js';
+import { createNoise3D, createNoise4D, createNoise2D } from '/public/simplex-noise.js';
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl');
-const { mat4, mat3, mat2, vec3 } = glMatrix;
+const { mat4, mat3, mat2, vec3, vec2 } = glMatrix;
 
 
 if (!gl) {
@@ -69,40 +69,47 @@ window.addEventListener('mousemove', (event) => {
 
 let vertexData;
 
-const noise3d = createNoise3D();
+const noiseDisplacement = createNoise2D();
+const [xInc, yInc, zInc] = [Math.random()/100000000, Math.random()/10000000, Math.random()/10];
+let [x,y,z,w] = [1,1,1,1]
 
-function generatePointVertex(numberOfPoints) {
-    let points = [];
-    
-    let x = 2;
-    let y = 5;
-    let z = 50;
-    const xInc = 0.000001;
-    const yInc = 0.1;
-    const zInc = 0.1;
-    
-    for (let point = 0; point < numberOfPoints; point++) {
-        x+=xInc;
-        y+=yInc;
-        z+=zInc;
-        const value3d = noise3d(x, y, z)/1.5 ;
-        x+=xInc;
-        y+=yInc;
-        z+=zInc;
-        const value3d2 = noise3d(x, y, z)/1.5;
-        x+=xInc;
-        y+=yInc;
-        z+=zInc;
-        const value3d3 = noise3d(x, y, z)/1.5;
-        // const r = () => Math.random()-0.5;
-        const xyz = [value3d, value3d2, value3d3];
-        const outputPoint = (vec3.create(), xyz);
-        points.push(...outputPoint);
+function generatePointVertex() {
+    const points = [];
+    const X = 100;
+    const Y = 100;
+    let [x, y, z] = [0, 0, 0];
+    for (let pointX = 0; pointX < X; pointX++) {
+        [x, y, z] = [x+=(1/X)+noiseDisplacement(x*10, 0)/X, y+noiseDisplacement(x, 0)/X, 0];
+        const xVertex = (vec3.create(), [x,y,z])
+        points.push(...xVertex);
+        let [xWid, yWid, zWid] = [x, y, 0];
+        for (let pointY = 0; pointY < Y; pointY++) {
+            [xWid, yWid, zWid] = [x, yWid+=(1/Y), 0];
+            const yVertex = (vec3.create(), [xWid, yWid, zWid]);
+            points.push(...yVertex);
+        }
     }
+    console.log(points)
     return points;
 }
 
-vertexData = generatePointVertex(130000);
+
+function displacePoints(points) {
+    console.log(points)
+    const displacedPoints = [];
+    const [xInc, yInc, zInc, wInc] = [0.001,0.000002,1, 0.0000001];
+    const pointValues = [];
+    for (let i = 0; i < points.length; i++) {
+        if ((i % 4) == 0) {
+            pointValues.push(points[i] + (noiseDisplacement(1, 1, 1, 1)));
+        }   else {
+            pointValues.push(points[i])
+        }
+    }
+    return pointValues;
+}
+
+vertexData = generatePointVertex();
 
 function randomColor() {
     return [
@@ -138,7 +145,7 @@ uniform mat4 matrix;
 void main() {
     vColor = color;
     gl_Position = matrix * vec4(position, 1);
-    gl_PointSize = 0.75;
+    gl_PointSize = 1.0;
 }
 `);
 
@@ -199,19 +206,19 @@ mat4.invert(viewMatrix, viewMatrix);
 
 function animate() {
     requestAnimationFrame(animate);
-    // vertexData = displacePoints();
+    let displacedVertexes = vertexData
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(displacedVertexes), gl.DYNAMIC_DRAW);
     // ROTATE
     mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.x - mouseLocation.x / 2) + 100));
-    mat4.rotateY(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.y - mouseLocation.y / 2) + 100));
+    // mat4.rotateY(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.y - mouseLocation.y / 2) + 100));
 
     //  Projection Matrix (p), Model Matrix (m)
     // p * m
     mat4.multiply(mvMatrix, viewMatrix, modelMatrix);
     mat4.multiply(mvpMatrix, projectionMatrix, mvMatrix);
     gl.uniformMatrix4fv(uniformLocations.matrix, false, mvpMatrix);
-    gl.drawArrays(gl.POINTS, 0, vertexData.length / 3);
+    gl.drawArrays(gl.POINTS, 0, displacedVertexes.length / 3);
 }
 
 animate();
