@@ -75,7 +75,7 @@ function generatePointVertex(time) {
     const points = [];
     const X = 99;
     const Y = 49;
-    const Z = 49;
+    const Z = 99;
     let [x_X, y_X, z_X] = [-0.5,-0.5,-0.5];
     let x_Y, y_Y, z_Y;
     let x_Z, y_Z, z_Z;
@@ -86,12 +86,12 @@ function generatePointVertex(time) {
         [x_Y, y_Y, z_Y] = [x_X, y_X, z_X];
         for (let pointY = 0; pointY < Y; pointY++) {
             [x_Y, y_Y, z_Y] = [x_Y, y_Y+=(1/X), z_Y];
-            const yVertex = (vec3.create(), [x_Y, y_Y+=(noiseDisplacement((pointX+time)/Y, 0)/(Y*10)), z_Y]);
+            const yVertex = (vec3.create(), [x_Y, y_Y+=(noiseDisplacement((pointX*2+time)/X, 0)/(X*4)), z_Y]);
             points.push(...yVertex);
             [x_Z, y_Z, z_Z] = [x_Y, y_Y, z_Y];
             for (let pointZ = 0; pointZ < Z; pointZ++) {
                 [x_Z, y_Z, z_Z] = [x_Z, y_Z, z_Z+=(1/Z)];
-                const zVertex = (vec3.create(), [x_Z, y_Z, z_Z ]);
+                const zVertex = (vec3.create(), [x_Z, y_Z, z_Z]);
                 points.push(...zVertex);
             }
         }
@@ -117,9 +117,9 @@ function displacePoints(points) {
 vertexData = generatePointVertex();
 
 function randomColor(vertexPosition) {
-    const absVal = vertexPosition.map((el) => Math.abs(el))
+    const absVal = vertexPosition.map((el) => Math.abs(el-.24))
     return [
-        absVal[0], absVal[1], absVal[2]
+        absVal[0]/1.4, absVal[0]/1.4, 1
     ];
 }
 
@@ -151,7 +151,7 @@ uniform mat4 matrix;
 void main() {
     vColor = color;
     gl_Position = matrix * vec4(position, 1);
-    gl_PointSize = 2.0;
+    gl_PointSize = 15.0;
 }
 `);
 
@@ -204,7 +204,8 @@ mat4.perspective(projectionMatrix,
 
 const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
-mat4.translate(modelMatrix, modelMatrix, [0, 0.25, -1.5]);
+mat4.translate(modelMatrix, modelMatrix, [0, 0.25, -3]);
+mat4.rotateX(modelMatrix, modelMatrix, Math.PI/10)
 
 mat4.translate(viewMatrix, viewMatrix, [0, 0, 0]);
 mat4.invert(viewMatrix, viewMatrix);
