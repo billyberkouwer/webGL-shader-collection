@@ -75,7 +75,7 @@ function generatePointVertex(time) {
     const points = [];
     const X = 99;
     const Y = 49;
-    const Z = 99;
+    const Z = 49;
     let [x_X, y_X, z_X] = [-0.5,-0.5,-0.5];
     let x_Y, y_Y, z_Y;
     let x_Z, y_Z, z_Z;
@@ -99,21 +99,6 @@ function generatePointVertex(time) {
     return points;
 }
 
-
-function displacePoints(points) {
-    const displacedPoints = [];
-    const [xInc, yInc, zInc, wInc] = [0.001,0.000002,1, 0.0000001];
-    const pointValues = [];
-    for (let i = 0; i < points.length; i++) {
-        if ((i % 4) == 0) {
-            pointValues.push(points[i] + (noiseDisplacement(1, 1, 1, 1)));
-        }   else {
-            pointValues.push(points[i])
-        }
-    }
-    return pointValues;
-}
-
 vertexData = generatePointVertex();
 
 function randomColor(vertexPosition) {
@@ -123,7 +108,6 @@ function randomColor(vertexPosition) {
     ];
 }
 
-// generate random colors and assign the same color to each vertex on a face
 let colorData = [];
 for (let i = 0; i < vertexData.length; i++) {
     colorData.push(...randomColor([vertexData[i], vertexData[i+1], vertexData[i+2]]))
@@ -151,7 +135,7 @@ uniform mat4 matrix;
 void main() {
     vColor = color;
     gl_Position = matrix * vec4(position, 1);
-    gl_PointSize = 15.0;
+    gl_PointSize = 12.0;
 }
 `);
 
