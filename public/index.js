@@ -50,7 +50,7 @@ function generatePointVertex(time) {
   const colorArr = [];
   
   for (let pointX = 0; pointX < X; pointX++) {
-    const strip = [];
+    let strip = [];
     let colorStrip;
 
     for (let pointY = 0; pointY < Y; pointY++) {
@@ -69,7 +69,7 @@ function generatePointVertex(time) {
       const fY = bY;
       const fZ = 0;
       strip.push(aX, aY, aZ, bX, bY, bZ, cX, cY, cZ, dX, dY, dZ, eX, eY, eZ, fX, fY, fZ);
-      colorStrip = strip.map((el, i) => {return (noise3d((pointX/(X/7)), (i/Y), ((time+2)/50)))});
+      colorStrip = strip.map((el, i) => {return (noise3d((pointX/(X/7)), ((i+1)/Y), ((time+1)/50)))});
     }
     colorArr.push(...colorStrip)
     points.push(...strip);
