@@ -25,43 +25,36 @@ const noiseDisplacement = createNoise2D();
 
 function generatePointVertex(time) {
   const points = [];
-  const X = 149;
-  const Y = 149;
-  const Z = 0;
-  let [x_X, y_X, z_X] = [-0.5, -0.5, -0.5];
-  let x_Y, y_Y, z_Y, x_Z, y_Z, z_Z;
-
+  const X = 100;
+  const Y = 100;
+  
   for (let pointX = 0; pointX < X; pointX++) {
-    [x_X, y_X, z_X] = [
-      x_X += (1 / X) + (Math.abs(noiseDisplacement((pointX * 5 + time) / X, 0) / (X * 4))),
-      y_X += noiseDisplacement((pointX * 5 + time) / X, 0) / (X * 4),
-      z_X += noiseDisplacement((pointX * 5 + time) / X, 0) / (X * 4),
-    ];
-    const xVertex = (vec3.create(), [x_X, y_X, z_X]);
-    points.push(...xVertex);
-    [x_Y, y_Y, z_Y] = [x_X, y_X, z_X];
-
+    const strip = []
     for (let pointY = 0; pointY < Y; pointY++) {
-      [x_Y, y_Y, z_Y] = [
-        x_Y += (noiseDisplacement((pointY * 5 + time) / Y, 0) / (Y * 6)),
-        y_Y += (1 / X) + (Math.abs(noiseDisplacement((pointY * 5 + time) / Y, 0) / (Y * 4))),
-        z_Y += noiseDisplacement((pointY * 5 + time) / Y, 0) / (Y * 6),
-      ];
-      const yVertex = (vec3.create(), [x_Y, y_Y, z_Y]);
-      points.push(...yVertex);
-      [x_Z, y_Z, z_Z] = [x_Y, y_Y, z_Y];
-
-      for (let pointZ = 0; pointZ < Z; pointZ++) {
-        [x_Z, y_Z, z_Z] = [x_Z, y_Z , z_Z += 1 / X];
-        const zVertex = (vec3.create(), [x_Z, y_Z , z_Z]);
-        points.push(...zVertex);
-      }
+      const aX = (1 / Y) * pointY;
+      const aY = (1 / X) * pointX;
+      const aZ = 0;
+      const bX = aX;
+      const bY = (1 / X) * (pointX + 1);
+      const bZ = 0;
+      const cX = (1 / Y) * (pointY + 1);
+      const cY = aY;
+      const cZ = 0;
+      const [dX, dY, dZ] = [cX, cY, cZ];
+      const [eX, eY, eZ] = [bX, bY, bZ];
+      const fX = cX;
+      const fY = bY;
+      const fZ = 0;
+      strip.push(aX, aY, aZ, bX, bY, bZ, cX, cY, cZ, dX, dY, dZ, eX, eY, eZ, fX, fY, fZ);
     }
+    points.push(...strip);
   }
   return points;
 }
 
 vertexData = generatePointVertex();
+
+console.log(vertexData)
 
 function randomColor(i) {
   return [
@@ -167,8 +160,8 @@ mat4.perspective(
 const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
-// mat4.rotateX(modelMatrix, modelMatrix, Math.PI / 1.4);
-mat4.translate(viewMatrix, viewMatrix, [0, 0, 0]);
+mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.5);
+mat4.translate(viewMatrix, viewMatrix, [0.5, 0, 1]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
@@ -176,7 +169,7 @@ let time = 0;
 function animate() {
   requestAnimationFrame(animate);
   time += 1;
-  createColor(time / 200);
+  // createColor(time / 200);
   let displacedVertexes = generatePointVertex(time);
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(
@@ -196,7 +189,7 @@ function animate() {
   mat4.multiply(mvMatrix, viewMatrix, modelMatrix);
   mat4.multiply(mvpMatrix, projectionMatrix, mvMatrix);
   gl.uniformMatrix4fv(uniformLocations.matrix, false, mvpMatrix);
-  gl.drawArrays(gl.LINE_STRIP, 0, displacedVertexes.length / 3);
+  gl.drawArrays(gl.TRIANGLES, 0, displacedVertexes.length / 3);
 }
 
 animate();
