@@ -20,17 +20,39 @@ window.addEventListener("mousemove", (event) => {
 });
 
 let vertexData;
+let colorIndex = 0;
+let colorData = [];
+const noise2d = createNoise2D();
+const noise3d = createNoise3D();
 
-const noiseDisplacement = createNoise2D();
+function randomColor(i) {
+  return [
+    Math.abs(noise2d(0, i)) + 0.2,
+    Math.abs(noise2d(0, i)) + 0.2,
+    Math.abs(noise2d(0, i)) + 0.8,
+  ];
+}
+
+const createColor = (x, y) => {
+  let colors = [];
+  for (let xIndex = 0; xIndex < x; xIndex++) {
+    for (let yIndex = 0; yIndex < y; yIndex++) {
+      colors.push(noise2d(100/xIndex, 100/xIndex))
+    }
+  }
+  return colors;
+};
 
 function generatePointVertex(time) {
   const points = [];
-  const X = 100;
-  const Y = 100;
+  const X = 50;
+  const Y = 50;
+  const colorArr = [];
   
   for (let pointX = 0; pointX < X; pointX++) {
     const strip = [];
-    
+    let colorStrip;
+
     for (let pointY = 0; pointY < Y; pointY++) {
       const aX = (1 / Y) * pointY;
       const aY = (1 / X) * pointX;
@@ -47,36 +69,16 @@ function generatePointVertex(time) {
       const fY = bY;
       const fZ = 0;
       strip.push(aX, aY, aZ, bX, bY, bZ, cX, cY, cZ, dX, dY, dZ, eX, eY, eZ, fX, fY, fZ);
+      colorStrip = strip.map((el, i) => {return (noise3d((pointX/(X/7)), (i/Y), ((time+2)/50)))});
     }
+    colorArr.push(...colorStrip)
     points.push(...strip);
   }
+  colorData = colorArr;
   return points;
 }
 
 vertexData = generatePointVertex();
-
-console.log(vertexData)
-
-function randomColor(i) {
-  return [
-    Math.abs(noiseDisplacement(0, i)) + 0.2,
-    Math.abs(noiseDisplacement(0, i)) + 0.2,
-    Math.abs(noiseDisplacement(0, i)) + 0.8,
-  ];
-}
-
-let colorData = [];
-let colorIndex = 1;
-
-const createColor = (colorIndex) => {
-  let colors = [];
-  for (let i = 0; i < vertexData.length; i++) {
-    colorData = colors.push(...randomColor(colorIndex + i / 2000));
-  }
-  colorData = colors;
-};
-
-createColor(0, colorIndex);
 
 const positionBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -161,8 +163,8 @@ mat4.perspective(
 const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
-mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.5);
-mat4.translate(viewMatrix, viewMatrix, [0.5, 0, 1]);
+// mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.5);
+mat4.translate(viewMatrix, viewMatrix, [0.5, 0.5, 2]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
@@ -170,7 +172,6 @@ let time = 0;
 function animate() {
   requestAnimationFrame(animate);
   time += 1;
-  // createColor(time / 200);
   let displacedVertexes = generatePointVertex(time);
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(
