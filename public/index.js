@@ -29,7 +29,8 @@ function generatePointVertex(time) {
   const Y = 100;
   
   for (let pointX = 0; pointX < X; pointX++) {
-    const strip = []
+    const strip = [];
+    
     for (let pointY = 0; pointY < Y; pointY++) {
       const aX = (1 / Y) * pointY;
       const aY = (1 / X) * pointX;
