@@ -19,87 +19,43 @@ window.addEventListener("mousemove", (event) => {
   mouseLocation.y = event.clientY - 50;
 });
 
-// vertex data
-// const vertexData = [
-//     // Front
-//     0.5, 0.5, 0.5,
-//     0.5, -.5, 0.5,
-//     -.5, 0.5, 0.5,
-//     -.5, 0.5, 0.5,
-//     0.5, -.5, 0.5,
-//     -.5, -.5, 0.5,
-
-//     // Left
-//     -.5, 0.5, 0.5,
-//     -.5, -.5, 0.5,
-//     -.5, 0.5, -.5,
-//     -.5, 0.5, -.5,
-//     -.5, -.5, 0.5,
-//     -.5, -.5, -.5,
-
-//     // Back
-//     -.5, 0.5, -.5,
-//     -.5, -.5, -.5,
-//     0.5, 0.5, -.5,
-//     0.5, 0.5, -.5,
-//     -.5, -.5, -.5,
-//     0.5, -.5, -.5,
-
-//     // Right
-//     0.5, 0.5, -.5,
-//     0.5, -.5, -.5,
-//     0.5, 0.5, 0.5,
-//     0.5, 0.5, 0.5,
-//     0.5, -.5, 0.5,
-//     0.5, -.5, -.5,
-
-//     // Top
-//     0.5, 0.5, 0.5,
-//     0.5, 0.5, -.5,
-//     -.5, 0.5, 0.5,
-//     -.5, 0.5, 0.5,
-//     0.5, 0.5, -.5,
-//     -.5, 0.5, -.5,
-
-//     // Bottom
-//     0.5, -.5, 0.5,
-//     0.5, -.5, -.5,
-//     -.5, -.5, 0.5,
-//     -.5, -.5, 0.5,
-//     0.5, -.5, -.5,
-//     -.5, -.5, -.5,
-// ];
-
 let vertexData;
 
 const noiseDisplacement = createNoise2D();
 
 function generatePointVertex(time) {
   const points = [];
-  const X = 99;
-  const Y = 49;
-  const Z = 49;
+  const X = 149;
+  const Y = 99;
+  const Z = 19;
   let [x_X, y_X, z_X] = [-0.5, -0.5, -0.5];
   let x_Y, y_Y, z_Y;
   let x_Z, y_Z, z_Z;
+
   for (let pointX = 0; pointX < X; pointX++) {
     [x_X, y_X, z_X] = [(x_X += 1 / X), y_X, z_X];
-    const xVertex = (vec3.create(), [x_X, y_X, z_X]);
+    const xVertex =
+      (vec3.create(),
+      [
+        x_X += noiseDisplacement((pointX * 5 + time) / X, 0) / (X * 4),
+        y_X += noiseDisplacement((pointX * 5 + time) / X, 0) / (X * 2),
+        z_X += noiseDisplacement((pointX * 5 + time) / X, 0) / (X * 2),
+      ]);
     points.push(...xVertex);
     [x_Y, y_Y, z_Y] = [x_X, y_X, z_X];
+
     for (let pointY = 0; pointY < Y; pointY++) {
       [x_Y, y_Y, z_Y] = [x_Y, (y_Y += 1 / X), z_Y];
-      const yVertex =
-        (vec3.create(),
-        [
-          x_Y,
-          (y_Y += noiseDisplacement((pointX * 2 + time) / X, 0) / (X * 4)),
-          z_Y,
-        ]);
+      const yVertex = (vec3.create(), [x_Y, y_Y, z_Y]);
       points.push(...yVertex);
-      [x_Z, y_Z, z_Z] = [x_Y, y_Y, z_Y];
+      [x_Z, y_Z, z_Z] = [
+        x_Y += noiseDisplacement((pointY * 5 + time) / Y, 0) / (Y * 4),
+        y_Y += noiseDisplacement((pointY * 5 + time) / Y, 0) / (Y * 4),
+        z_Y,
+      ];
+
       for (let pointZ = 0; pointZ < Z; pointZ++) {
-        [x_Z, y_Z, z_Z] = [x_Z, y_Z, (z_Z += 1 / Z)];
+        [x_Z, y_Z, z_Z] = [x_Z, y_Z, (z_Z += 1 / X)];
         const zVertex = (vec3.create(), [x_Z, y_Z, z_Z]);
         points.push(...zVertex);
       }
@@ -111,42 +67,52 @@ function generatePointVertex(time) {
 vertexData = generatePointVertex();
 
 function randomColor(i) {
-  return [noiseDisplacement(i, 0)*1.1, noiseDisplacement(i, 0)*1.1, noiseDisplacement(i, 0)*1.1+0.5];
+  return [
+    0.1 + noiseDisplacement(i, i),
+    0.1 + noiseDisplacement(i, i),
+    noiseDisplacement(i, i) + 1,
+  ];
 }
 
 let colorData = [];
-for (let i = 0; i < vertexData.length; i++) {
-  colorData.push(
-    ...randomColor(noiseDisplacement(i/1000, i/90))
-  );
-}
+let colorIndex = 1;
 
-const positionBuffer = gl.createBuffer()
+const createColor = (time, colorIndex) => {
+  let colors = [];
+  for (let i = 0; i < vertexData.length; i++) {
+    colorData = colors.push(...randomColor(colorIndex * (i / 100000)));
+  }
+  colorData = colors;
+};
+
+createColor(0, colorIndex);
+
+const positionBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.DYNAMIC_DRAW);
 
 const colorBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.STATIC_DRAW);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.DYNAMIC_DRAW);
 
 const vertexShader = gl.createShader(gl.VERTEX_SHADER);
 
 gl.shaderSource(
   vertexShader,
   `
-precision highp float;
+  precision highp float;
 
-attribute vec3 position;
-attribute vec3 color;
-varying vec3 vColor;
+  attribute vec3 position;
+  attribute vec3 color;
+  varying vec3 vColor;
 
-uniform mat4 matrix;
+  uniform mat4 matrix;
 
-void main() {
-    vColor = color;
-    gl_Position = matrix * vec4(position, 1);
-    gl_PointSize = 12.0;
-}
+  void main() {
+      vColor = color;
+      gl_Position = matrix * vec4(position, 1);
+      gl_PointSize = 15.0;
+  }
 `
 );
 
@@ -156,13 +122,13 @@ const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
 gl.shaderSource(
   fragmentShader,
   `
-precision highp float;
+  precision highp float;
 
-varying vec3 vColor;
+  varying vec3 vColor;
 
-void main() {
-    gl_FragColor = vec4(vColor, 1);
-}
+  void main() {
+      gl_FragColor = vec4(vColor, 1);
+  }
 `
 );
 gl.compileShader(fragmentShader);
@@ -203,10 +169,9 @@ mat4.perspective(
 
 const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
-mat4.translate(modelMatrix, modelMatrix, [0, 0.25, -3]);
-mat4.rotateX(modelMatrix, modelMatrix, Math.PI / 10);
-
-mat4.translate(viewMatrix, viewMatrix, [0, 0, 0]);
+mat4.translate(modelMatrix, modelMatrix, [0, -0.5, 0]);
+mat4.rotateX(modelMatrix, modelMatrix, Math.PI / 2);
+mat4.translate(viewMatrix, viewMatrix, [0, 0.09, 0.3]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
@@ -214,6 +179,8 @@ let time = 0;
 function animate() {
   requestAnimationFrame(animate);
   time += 1;
+  colorIndex += 0.005;
+  createColor(time, colorIndex);
   let displacedVertexes = generatePointVertex(time);
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(
@@ -221,9 +188,12 @@ function animate() {
     new Float32Array(displacedVertexes),
     gl.DYNAMIC_DRAW
   );
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.DYNAMIC_DRAW);
   // ROTATE
-  // mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.x - mouseLocation.x / 2) + 100));
-  mat4.rotateY(modelMatrix, modelMatrix, Math.PI / 2 / 300);
+  //   mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.x - mouseLocation.x / 2) + 100));
+  //   mat4.rotateY(modelMatrix, modelMatrix, Math.PI / 2 / 300);
 
   //  Projection Matrix (p), Model Matrix (m)
   // p * m
