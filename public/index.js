@@ -38,8 +38,8 @@ const createColor = (x, y) => {
 function generatePointVertex(time) {
   const points = [];
   const colorArr = [];
-  const X = 100;
-  const Y = 100;
+  const X = 110;
+  const Y = 110;
 
   for (let pointX = 0; pointX < X; pointX++) {
     const strip = [];
@@ -82,8 +82,19 @@ function generatePointVertex(time) {
     points.push(...strip)
 
     for (let i = 0; i < strip.length; i++) {
-      const noiseVal = noise3d(pointX * 0.03, (i / (X / 0.3)), (time + 1) / 100);
-      colorArr.push(noiseVal)
+      const smallNoiseVal = noise3d(pointX * 0.2, (i / (X / 2)), (time + 1) / 100) / 4;
+      const bigNoiseVal = noise3d(pointX * 0.05, (i / (X / 0.5)), (time + 1) / 100) / 4;
+      const massiveNoiseVal = noise3d(pointX * 0.008, (i / (X / 0.08)), (time + 1) / 100) ;
+      const sinWave = Math.sin((pointX * 0.05) - Math.sin((pointX * 0.05) + time/20) * massiveNoiseVal + time/20) * 2;
+      const noiseSin = createWave();
+      function createWave() {
+        if (smallNoiseVal + sinWave <= -2) {
+          return sinWave + smallNoiseVal;
+        } else {
+          return sinWave + bigNoiseVal;
+        }
+      }
+      colorArr.push(noiseSin)
     }
   }
 
@@ -122,8 +133,8 @@ gl.shaderSource(
   uniform mat4 matrix;
 
   void main() {
-      vColor = color;
-      vPosition = position + (color * vec3(0.0, 0.0, 0.06));
+      vColor = color * vec3(0.5, 0.8, 0.3);
+      vPosition = position + (color * vec3(0.0, 0.0, 0.04));
       gl_Position = matrix * vec4(vPosition, 1);
   }
 `
@@ -140,7 +151,7 @@ gl.shaderSource(
   varying vec3 vColor;
 
   void main() {
-      gl_FragColor = vec4(0.0 - vColor.r, 0.5 - vColor.g, 1.0 - vColor.b, 1.0);
+      gl_FragColor = vec4(0.0 - vColor.r, 0.0 - vColor.g, 1.0 - vColor.b, 1.0);
   }
 `
 );
@@ -183,8 +194,9 @@ mat4.perspective(
 const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
-mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.25)
-mat4.translate(viewMatrix, viewMatrix, [0.5, -0.5, 3]);
+mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.5)
+mat4.rotateZ(modelMatrix, modelMatrix, Math.PI/2)
+mat4.translate(viewMatrix, viewMatrix, [-0.5, -0.25, 3]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
