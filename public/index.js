@@ -83,7 +83,7 @@ function generatePointVertex(time) {
 
     for (let i = 0; i < strip.length; i++) {
       const noiseVal = noise3d(pointX * 0.03, (i / (X / 0.3)), (time + 1) / 100);
-      colorArr.push(noiseVal)
+      colorArr.push(Math.abs(noiseVal))
     }
   }
 
@@ -123,8 +123,8 @@ gl.shaderSource(
 
   void main() {
       vColor = color;
-      vPosition = position + (color * vec3(0.0, 0.0, 0.06));
-      gl_Position = matrix * vec4(vPosition, 1);
+      vPosition = (position) - abs(color * vec3(0.0, 0.0, 0.1));
+      gl_Position = (matrix) * vec4(vPosition, 1);
   }
 `
 );
@@ -140,7 +140,7 @@ gl.shaderSource(
   varying vec3 vColor;
 
   void main() {
-      gl_FragColor = vec4(0.0 - vColor.r, 0.5 - vColor.g, 1.0 - vColor.b, 1.0);
+      gl_FragColor = vec4(1.1 - vColor.r, 0.5 - vColor.g, 0.5 - vColor.b, 1.0);
   }
 `
 );
