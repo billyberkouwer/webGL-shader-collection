@@ -21,17 +21,9 @@ window.addEventListener("mousemove", (event) => {
 
 let vertexData;
 let colorIndex = 0;
-let colorData = [];
+let colorData;
 const noise2d = createNoise2D();
 const noise3d = createNoise3D();
-
-function randomColor(i) {
-  return [
-    Math.abs(noise2d(0, i)) + 0.2,
-    Math.abs(noise2d(0, i)) + 0.2,
-    Math.abs(noise2d(0, i)) + 0.8,
-  ];
-}
 
 const createColor = (x, y) => {
   let colors = [];
@@ -45,26 +37,24 @@ const createColor = (x, y) => {
 
 function generatePointVertex(time) {
   const points = [];
-  const X = 200;
-  const Y = 200;
   const colorArr = [];
+  const X = 100;
+  const Y = 100;
 
   for (let pointX = 0; pointX < X; pointX++) {
     const strip = [];
-    const colorStrip = [];
-
     for (let pointY = 0; pointY < Y; pointY++) {
-      const aX = (1 / Y) * pointY;
-      const aY = (1 / X) * pointX;
+      const aX = (pointY / Y);
+      const aY = (pointX / X);
       const aZ = 0;
       const bX = aX;
-      const bY = (1 / X) * (pointX + 1);
+      const bY = ((pointX + 1) / X);
       const bZ = 0;
-      const cX = (1 / Y) * (pointY + 1);
+      const cX = ((pointY + 1) / Y);
       const cY = aY;
       const cZ = 0;
-      const [dX, dY, dZ] = [cX, cY, cZ];
-      const [eX, eY, eZ] = [bX, bY, bZ];
+      const [dX, dY, dZ] = [cX, cY, 0];
+      const [eX, eY, eZ] = [bX, bY, 0];
       const fX = cX;
       const fY = bY;
       const fZ = 0;
@@ -89,24 +79,25 @@ function generatePointVertex(time) {
         fZ
       );
     }
+    points.push(...strip)
 
     for (let i = 0; i < strip.length; i++) {
-      const noiseVal = noise3d(pointX / (X / 5), (i + 1) / (Y * 5), (time + 1) / 100);
-        colorStrip.push(
-          Math.abs(noiseVal)
-        );
+      const noiseVal = noise3d(pointX * 0.03, (i / (X / 0.3)), (time + 1) / 100);
+      colorArr.push(noiseVal)
     }
-
-    colorArr.push(...colorStrip);
-    points.push(...strip.map((el, i) =>
-    i % 1 === 1 || i % 3 ? (el += colorStrip[i] / 40) : el
-  ));
   }
-  colorData = colorArr;
-  return points;
+
+  // for (let i = 0; i < points.length; i++) {
+  //   const noiseVal = noise2d(i * 0.001, 1);
+  //   colorArr.push(
+  //     noiseVal
+  //   );
+  // }
+  return {vertices: points, colors: colorArr};
 }
 
-vertexData = generatePointVertex();
+vertexData = generatePointVertex().vertices;
+colorData = generatePointVertex().colors;
 
 const positionBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -126,12 +117,14 @@ gl.shaderSource(
   attribute vec3 position;
   attribute vec3 color;
   varying vec3 vColor;
+  varying vec3 vPosition;
 
   uniform mat4 matrix;
 
   void main() {
       vColor = color;
-      gl_Position = matrix * vec4(position, 1);
+      vPosition = position + (color * vec3(0.0, 0.0, 0.06));
+      gl_Position = matrix * vec4(vPosition, 1);
   }
 `
 );
@@ -147,7 +140,7 @@ gl.shaderSource(
   varying vec3 vColor;
 
   void main() {
-      gl_FragColor = vec4(vColor, 1);
+      gl_FragColor = vec4(0.0 - vColor.r, 0.5 - vColor.g, 1.0 - vColor.b, 1.0);
   }
 `
 );
@@ -190,8 +183,8 @@ mat4.perspective(
 const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
-mat4.rotateX(modelMatrix, modelMatrix, Math.PI / 1.5);
-mat4.translate(viewMatrix, viewMatrix, [0.5, -0.25, 1]);
+mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.25)
+mat4.translate(viewMatrix, viewMatrix, [0.5, -0.5, 3]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
@@ -199,7 +192,9 @@ let time = 0;
 function animate() {
   requestAnimationFrame(animate);
   time += 1;
-  let displacedVertexes = generatePointVertex(time);
+  let meshData = generatePointVertex(time)
+  let displacedVertexes = meshData.vertices;
+  let noiseColors = meshData.colors;
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(
     gl.ARRAY_BUFFER,
@@ -208,10 +203,10 @@ function animate() {
   );
 
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.DYNAMIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(noiseColors), gl.DYNAMIC_DRAW);
   // ROTATE
   // mat4.rotateX(modelMatrix, modelMatrix, Math.PI/2 / ((mouseLocation.x - mouseLocation.x / 2) + 100));
-  // mat4.rotateY(modelMatrix, modelMatrix, Math.PI / 2 / 300);
+  // mat4.rotateY(viewMatrix, viewMatrix, Math.PI / 2 / 300);
 
   //  Projection Matrix (p), Model Matrix (m)
   // p * m
