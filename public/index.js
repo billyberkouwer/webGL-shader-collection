@@ -45,13 +45,14 @@ const createColor = (x, y) => {
 
 function generatePointVertex(time) {
   const points = [];
-  const X = 50;
-  const Y = 50;
+  const X = 150;
+  const Y = 150;
   const colorArr = [];
   
   for (let pointX = 0; pointX < X; pointX++) {
-    let strip = [];
-    let colorStrip;
+    const strip = [];
+    const colorStrip = [];
+    const displacedPoints = [];
 
     for (let pointY = 0; pointY < Y; pointY++) {
       const aX = (1 / Y) * pointY;
@@ -69,10 +70,15 @@ function generatePointVertex(time) {
       const fY = bY;
       const fZ = 0;
       strip.push(aX, aY, aZ, bX, bY, bZ, cX, cY, cZ, dX, dY, dZ, eX, eY, eZ, fX, fY, fZ);
-      colorStrip = strip.map((el, i) => {return (noise3d((pointX/(X/7)), ((i+1)/Y), ((time+1)/50)))});
     }
+
+    for (let i = 0; i < strip.length; i++) {
+      colorStrip.push(noise3d(pointX/(X/5), (i+1)/(Y*5), (time+1)/100))
+    }
+
+    displacedPoints.push(...strip.map((el, i) => (i % 1 === 1 || i % 3 ? el += (colorStrip[i]/50): el)))
     colorArr.push(...colorStrip)
-    points.push(...strip);
+    points.push(...displacedPoints);
   }
   colorData = colorArr;
   return points;
@@ -104,7 +110,6 @@ gl.shaderSource(
   void main() {
       vColor = color;
       gl_Position = matrix * vec4(position, 1);
-      gl_PointSize = 20.0;
   }
 `
 );
@@ -163,8 +168,8 @@ mat4.perspective(
 const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
-// mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.5);
-mat4.translate(viewMatrix, viewMatrix, [0.5, 0.5, 2]);
+mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.5);
+mat4.translate(viewMatrix, viewMatrix, [0.5, -0.25, 1]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
