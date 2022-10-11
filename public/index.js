@@ -37,7 +37,7 @@ const createColor = (x, y) => {
   let colors = [];
   for (let xIndex = 0; xIndex < x; xIndex++) {
     for (let yIndex = 0; yIndex < y; yIndex++) {
-      colors.push(noise2d(100/xIndex, 100/xIndex))
+      colors.push(noise2d(100 / xIndex, 100 / xIndex));
     }
   }
   return colors;
@@ -45,14 +45,13 @@ const createColor = (x, y) => {
 
 function generatePointVertex(time) {
   const points = [];
-  const X = 150;
-  const Y = 150;
+  const X = 200;
+  const Y = 200;
   const colorArr = [];
-  
+
   for (let pointX = 0; pointX < X; pointX++) {
     const strip = [];
     const colorStrip = [];
-    const displacedPoints = [];
 
     for (let pointY = 0; pointY < Y; pointY++) {
       const aX = (1 / Y) * pointY;
@@ -69,16 +68,39 @@ function generatePointVertex(time) {
       const fX = cX;
       const fY = bY;
       const fZ = 0;
-      strip.push(aX, aY, aZ, bX, bY, bZ, cX, cY, cZ, dX, dY, dZ, eX, eY, eZ, fX, fY, fZ);
+      strip.push(
+        aX,
+        aY,
+        aZ,
+        bX,
+        bY,
+        bZ,
+        cX,
+        cY,
+        cZ,
+        dX,
+        dY,
+        dZ,
+        eX,
+        eY,
+        eZ,
+        fX,
+        fY,
+        fZ
+      );
     }
 
     for (let i = 0; i < strip.length; i++) {
-      colorStrip.push(noise3d(pointX/(X/5), (i+1)/(Y*5), (time+1)/100))
+      const noiseVal = noise3d(pointX / (X / 5), (i + 1) / (Y * 5), (time + 1) / 100);
+        colorStrip.push(
+          Math.abs(noiseVal)
+        );
     }
 
-    displacedPoints.push(...strip.map((el, i) => (i % 1 === 1 || i % 3 ? el += (colorStrip[i]/50): el)))
-    colorArr.push(...colorStrip)
-    points.push(...displacedPoints);
+    colorArr.push(...colorStrip);
+    points.push(...strip.map((el, i) =>
+    i % 1 === 1 || i % 3 ? (el += colorStrip[i] / 40) : el
+  ));
   }
   colorData = colorArr;
   return points;
@@ -168,7 +190,7 @@ mat4.perspective(
 const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
-mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.5);
+mat4.rotateX(modelMatrix, modelMatrix, Math.PI / 1.5);
 mat4.translate(viewMatrix, viewMatrix, [0.5, -0.25, 1]);
 mat4.invert(viewMatrix, viewMatrix);
 
