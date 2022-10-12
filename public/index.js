@@ -123,9 +123,10 @@ gl.shaderSource(
 
   void main() {
       vColor = color;
-      vPosition = vec3(position.r, position.g, position.b - sqrt(color.b) / 20.0);
-      if (vPosition.b < -0.048) {
-        vColor = vec3(2.0, 2.0, 2.0);
+      vPosition = vec3(position.r, position.g, position.b - sqrt(color.b) / 14.0);
+      if (vPosition.b < -0.049) {
+        vPosition.b /= vColor.r;
+        vColor = vec3(2.0, 0.9, 0.4);
       };
       gl_Position = (matrix) * vec4(vPosition, 1.0);
   }
@@ -187,7 +188,7 @@ const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
 mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.25)
-mat4.translate(viewMatrix, viewMatrix, [0.5, -0.475, 1.5]);
+mat4.translate(viewMatrix, viewMatrix, [0.5, -0.5, 1.15]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
