@@ -26,8 +26,8 @@ const noise3d = createNoise3D();
 function generatePointVertex(time) {
   const points = [];
   const colorArr = [];
-  const X = 110;
-  const Y = 110;
+  const X = 120;
+  const Y = 120;
 
   for (let pointX = 0; pointX < X; pointX++) {
     const strip = [];
@@ -70,16 +70,17 @@ function generatePointVertex(time) {
     points.push(...strip)
 
     for (let i = 0; i < strip.length; i++) {
-      const smallNoiseVal = noise3d(pointX * 0.2, (i / (X / 2)), (time + 1) / 100) / 4;
-      const bigNoiseVal = noise3d(pointX * 0.05, (i / (X / 0.5)), (time + 1) / 100) / 4;
-      const massiveNoiseVal = noise3d(pointX * 0.008, (i / (X / 0.08)), (time + 1) / 100) ;
-      const sinWave = Math.sin(((pointX * 0.05) - Math.sin((pointX * 0.05) + time/20)) + (Math.sin((pointX * 0.05) + time/20)/4) * massiveNoiseVal + time/20) * 2;
+      const smallNoiseVal = noise3d(pointX * 0.2, i / (X / 2), (time + 1) / 100) / 6;
+      const bigNoiseVal = noise3d(pointX * 0.05, i / (X / 0.5), (time + 1) / 100) / 10;
+      const massiveNoiseVal = noise3d(pointX * 0.009, i / (X / 0.09), (time + 1 )/ 50);
+      const sinWave = Math.sin(((time) / 20) + pointX * 0.06)
+      const enhancedSinWave = (sinWave * 2);
       const noiseSin = createWave();
       function createWave() {
-        if (smallNoiseVal + sinWave <= -2) {
-          return sinWave + smallNoiseVal;
+        if (smallNoiseVal + sinWave <= -0.9) {
+          return enhancedSinWave + smallNoiseVal + massiveNoiseVal;
         } else {
-          return sinWave + bigNoiseVal;
+          return enhancedSinWave + (smallNoiseVal/4) + bigNoiseVal + massiveNoiseVal;
         }
       }
       colorArr.push(noiseSin)
@@ -122,7 +123,7 @@ gl.shaderSource(
 
   void main() {
       vColor = color * vec3(0.5, 0.8, 0.3);
-      vPosition = position + (color * vec3(0.0, 0.0, 0.04));
+      vPosition = position + (color * vec3(0.01, 0.05, 0.05));
       gl_Position = matrix * vec4(vPosition, 1);
   }
 `
@@ -184,7 +185,7 @@ const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
 mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.5)
 mat4.rotateZ(modelMatrix, modelMatrix, Math.PI/2)
-mat4.translate(viewMatrix, viewMatrix, [-0.5, -0.25, 3]);
+mat4.translate(viewMatrix, viewMatrix, [-0.5, -0.25, 2]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
