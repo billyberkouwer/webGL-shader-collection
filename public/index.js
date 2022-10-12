@@ -38,8 +38,8 @@ const createColor = (x, y) => {
 function generatePointVertex(time) {
   const points = [];
   const colorArr = [];
-  const X = 100;
-  const Y = 100;
+  const X = 150;
+  const Y = 150;
 
   for (let pointX = 0; pointX < X; pointX++) {
     const strip = [];
@@ -123,8 +123,8 @@ gl.shaderSource(
 
   void main() {
       vColor = color;
-      vPosition = (position) - abs(color * vec3(0.0, 0.0, 0.1));
-      gl_Position = (matrix) * vec4(vPosition, 1);
+      vPosition = vec3(position.r, position.g, position.b - color.b / 10.0);
+      gl_Position = (matrix) * vec4(vPosition, 1.0);
   }
 `
 );
@@ -184,7 +184,7 @@ const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
 mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.25)
-mat4.translate(viewMatrix, viewMatrix, [0.5, -0.5, 3]);
+mat4.translate(viewMatrix, viewMatrix, [0.5, -0.5, 2.5]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
