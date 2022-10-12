@@ -38,8 +38,8 @@ const createColor = (x, y) => {
 function generatePointVertex(time) {
   const points = [];
   const colorArr = [];
-  const X = 150;
-  const Y = 150;
+  const X = 200;
+  const Y = 250;
 
   for (let pointX = 0; pointX < X; pointX++) {
     const strip = [];
@@ -82,7 +82,7 @@ function generatePointVertex(time) {
     points.push(...strip)
 
     for (let i = 0; i < strip.length; i++) {
-      const noiseVal = noise3d(pointX * 0.03, (i / (X / 0.3)), (time + 1) / 100);
+      const noiseVal = noise3d(pointX * 0.03, (i / (X / 0.3)), (time + 1) / 20);
       colorArr.push(Math.abs(noiseVal))
     }
   }
@@ -123,7 +123,10 @@ gl.shaderSource(
 
   void main() {
       vColor = color;
-      vPosition = vec3(position.r, position.g, position.b - color.b / 10.0);
+      vPosition = vec3(position.r, position.g, position.b - sqrt(color.b) / 20.0);
+      if (vPosition.b < -0.048) {
+        vColor = vec3(2.0, 2.0, 2.0);
+      };
       gl_Position = (matrix) * vec4(vPosition, 1.0);
   }
 `
@@ -140,7 +143,7 @@ gl.shaderSource(
   varying vec3 vColor;
 
   void main() {
-      gl_FragColor = vec4(1.1 - vColor.r, 0.5 - vColor.g, 0.5 - vColor.b, 1.0);
+      gl_FragColor = abs(vec4(1.1 - vColor.r, 0.09 - vColor.g, 0.09 - vColor.b, 1.0));
   }
 `
 );
@@ -184,7 +187,7 @@ const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
 mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.25)
-mat4.translate(viewMatrix, viewMatrix, [0.5, -0.5, 2.5]);
+mat4.translate(viewMatrix, viewMatrix, [0.5, -0.4, 3]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
