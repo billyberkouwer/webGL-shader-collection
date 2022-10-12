@@ -187,7 +187,7 @@ const mvMatrix = mat4.create();
 const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
 mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.25)
-mat4.translate(viewMatrix, viewMatrix, [0.5, -0.4, 3]);
+mat4.translate(viewMatrix, viewMatrix, [0.5, -0.475, 1.5]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
