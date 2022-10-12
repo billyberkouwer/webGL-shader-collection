@@ -20,20 +20,8 @@ window.addEventListener("mousemove", (event) => {
 });
 
 let vertexData;
-let colorIndex = 0;
 let colorData;
-const noise2d = createNoise2D();
 const noise3d = createNoise3D();
-
-const createColor = (x, y) => {
-  let colors = [];
-  for (let xIndex = 0; xIndex < x; xIndex++) {
-    for (let yIndex = 0; yIndex < y; yIndex++) {
-      colors.push(noise2d(100 / xIndex, 100 / xIndex));
-    }
-  }
-  return colors;
-};
 
 function generatePointVertex(time) {
   const points = [];
@@ -85,7 +73,7 @@ function generatePointVertex(time) {
       const smallNoiseVal = noise3d(pointX * 0.2, (i / (X / 2)), (time + 1) / 100) / 4;
       const bigNoiseVal = noise3d(pointX * 0.05, (i / (X / 0.5)), (time + 1) / 100) / 4;
       const massiveNoiseVal = noise3d(pointX * 0.008, (i / (X / 0.08)), (time + 1) / 100) ;
-      const sinWave = Math.sin((pointX * 0.05) - Math.sin((pointX * 0.05) + time/20) * massiveNoiseVal + time/20) * 2;
+      const sinWave = Math.sin(((pointX * 0.05) - Math.sin((pointX * 0.05) + time/20)) + (Math.sin((pointX * 0.05) + time/20)/4) * massiveNoiseVal + time/20) * 2;
       const noiseSin = createWave();
       function createWave() {
         if (smallNoiseVal + sinWave <= -2) {
