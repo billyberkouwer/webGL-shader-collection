@@ -73,26 +73,19 @@ function generatePointVertex(time) {
       const smallNoiseVal = noise3d(pointX * 0.2, i / (X / 2), (time + 1) / 100) / 6;
       const bigNoiseVal = Math.abs(noise3d(pointX * 0.05, i / (X / 0.5), (time + 1) / 50) / 4);
       const massiveNoiseVal = noise3d(pointX * 0.009, i / (X / 0.09), (time + 1) / 100);
-      const sinWave = Math.sin(((time) / 20) + pointX * 0.09)
+      const sinWave = Math.sin(((time) / 20) + pointX * 0.07)
       const enhancedSinWave = (sinWave * 1.5);
       const noiseSin = createWave();
       function createWave() {
         if (smallNoiseVal + sinWave <= -1) {
-          return enhancedSinWave + smallNoiseVal + massiveNoiseVal;
+          return enhancedSinWave + (smallNoiseVal/3) + massiveNoiseVal;
         } else {
-          return enhancedSinWave + (smallNoiseVal/5) + bigNoiseVal + massiveNoiseVal;
+          return enhancedSinWave + (smallNoiseVal/4) + (bigNoiseVal*1.25) + massiveNoiseVal;
         }
       }
       colorArr.push(noiseSin)
     }
   }
-
-  // for (let i = 0; i < points.length; i++) {
-  //   const noiseVal = noise2d(i * 0.001, 1);
-  //   colorArr.push(
-  //     noiseVal
-  //   );
-  // }
   return {vertices: points, colors: colorArr};
 }
 
@@ -122,7 +115,7 @@ gl.shaderSource(
   uniform mat4 matrix;
 
   void main() {
-      vColor = color * vec3(0.6, 0.9, 0.3);
+      vColor = color * vec3(0.6, 0.9, 0.4);
       vPosition = position + (color * vec3(0.01, 0.05, 0.05));
       gl_Position = matrix * vec4(vPosition, 1);
   }
@@ -185,7 +178,7 @@ const mvpMatrix = mat4.create();
 mat4.translate(modelMatrix, modelMatrix, [0, 0, 0]);
 mat4.rotateX(modelMatrix, modelMatrix, Math.PI/1.5)
 mat4.rotateZ(modelMatrix, modelMatrix, Math.PI/2)
-mat4.translate(viewMatrix, viewMatrix, [-0.5, -0.3, 2.5]);
+mat4.translate(viewMatrix, viewMatrix, [-0.5, -0.3, 2]);
 mat4.invert(viewMatrix, viewMatrix);
 
 let time = 0;
